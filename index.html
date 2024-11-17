@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ejercicios de JavaScript y AJAX</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        h2, h3 { color: #333; }
+        div { margin-bottom: 20px; }
+        .block { border: 1px solid #ccc; padding: 15px; border-radius: 5px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+
+    <!-- Encabezado -->
+    <header>
+        <h1>FUNDACIÓN UNIVERSITARIA UNIR</h1>
+        <p><strong>Asignatura:</strong> Desarrollo de Aplicaciones en Red</p>
+        <p><strong>Autor:</strong> Nelson Enrique Guio Rojas</p>
+        <p id="currentDate"><strong>Fecha:</strong></p>
+    </header>
+
+    <!-- BLOQUE JSCRIPT -->
+    <div class="block">
+        <h2>BLOQUE JSCRIPT</h2>
+
+        <!-- 1. Detectar si la cadena de entrada es un palíndromo -->
+        <div>
+            <h3>1. Detectar si la cadena de entrada es un palíndromo</h3>
+            <input type="text" id="palindromeInput" placeholder="Introduce una cadena">
+            <button id="palindromeButton" onclick="checkPalindrome()" disabled>Verificar</button>
+            <p id="palindromeResult"></p>
+        </div>
+
+        <!-- 2. Determinar el mayor de dos números -->
+        <div>
+            <h3>2. Determinar el mayor de dos números</h3>
+            <input type="number" id="num1" placeholder="Número 1">
+            <input type="number" id="num2" placeholder="Número 2">
+            <button id="greaterButton" onclick="findGreater()" disabled>Comparar</button>
+            <p id="greaterResult"></p>
+        </div>
+
+        <!-- 3. Mostrar las vocales que aparecen en una frase -->
+        <div>
+            <h3>3. Mostrar las vocales que aparecen en una frase</h3>
+            <input type="text" id="vowelInput" placeholder="Introduce una frase">
+            <button id="vowelButton" onclick="showVowels()" disabled>Mostrar Vocales</button>
+            <p id="vowelResult"></p>
+        </div>
+
+        <!-- 4. Contar la frecuencia de cada vocal en una frase -->
+        <div>
+            <h3>4. Contar la frecuencia de cada vocal en una frase</h3>
+            <input type="text" id="countVowelInput" placeholder="Introduce una frase">
+            <button id="countVowelButton" onclick="countVowels()" disabled>Contar Vocales</button>
+            <p id="countVowelResult"></p>
+        </div>
+    </div>
+
+    <!-- BLOQUE AJAX -->
+    <div class="block">
+        <h2>BLOQUE AJAX</h2>
+
+        <!-- 1. Mostrar la URL actual al cargar la página -->
+        <div>
+            <h3>1. Mostrar la URL actual al cargar la página</h3>
+            <input type="text" id="urlInput" placeholder="URL actual">
+        </div>
+
+        <!-- 2. Mostrar Contenidos de la URL -->
+        <div>
+            <h3>2. Mostrar Contenidos de la URL</h3>
+            <button id="contentButton" onclick="loadContent()" disabled>Mostrar Contenidos</button>
+            <div id="contentResult" style="border: 1px solid #ddd; padding: 10px; margin-top: 10px;"></div>
+        </div>
+
+        <!-- 3. Estados de la Petición -->
+        <div>
+            <h3>3. Estados de la Petición</h3>
+            <p id="stateResult"></p>
+        </div>
+
+        <!-- 4. Cabeceras HTTP de la Respuesta -->
+        <div>
+            <h3>4. Cabeceras HTTP de la Respuesta</h3>
+            <p id="headersResult"></p>
+        </div>
+
+        <!-- 5. Código de Estado de la Respuesta -->
+        <div>
+            <h3>5. Código de Estado de la Respuesta</h3>
+            <p id="statusCodeResult"></p>
+        </div>
+    </div>
+
+    <!-- Script JavaScript -->
+    <script>
+        // Establecer la fecha y hora actual
+        function setCurrentDate() {
+            const now = new Date();
+            const options = { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' };
+            const formattedDate = now.toLocaleDateString('es-ES', options);
+            document.getElementById("currentDate").innerHTML = `<strong>Fecha:</strong> ${formattedDate}`;
+        }
+
+        // Llamar a la función para establecer la fecha al cargar la página
+        setCurrentDate();
+
+        // Activar botones al detectar cambios en los campos de texto
+        function toggleButton(inputId, buttonId) {
+            const input = document.getElementById(inputId);
+            const button = document.getElementById(buttonId);
+            button.disabled = input.value.trim() === "";
+        }
+
+        // Activar botón si ambos campos tienen valor
+        function checkBothFilled() {
+            const num1 = document.getElementById("num1").value.trim();
+            const num2 = document.getElementById("num2").value.trim();
+            const button = document.getElementById("greaterButton");
+            button.disabled = !(num1 && num2);
+        }
+
+        // Funciones de los ejercicios
+        document.getElementById("palindromeInput").addEventListener("input", () => toggleButton("palindromeInput", "palindromeButton"));
+        document.getElementById("vowelInput").addEventListener("input", () => toggleButton("vowelInput", "vowelButton"));
+        document.getElementById("countVowelInput").addEventListener("input", () => toggleButton("countVowelInput", "countVowelButton"));
+        document.getElementById("num1").addEventListener("input", checkBothFilled);
+        document.getElementById("num2").addEventListener("input", checkBothFilled);
+
+        // AJAX: Activar botón al escribir en URL
+        document.getElementById("urlInput").addEventListener("input", () => toggleButton("urlInput", "contentButton"));
+
+        // AJAX: Mostrar contenido
+        function loadContent() {
+            const url = document.getElementById("urlInput").value;
+            const xhr = new XMLHttpRequest();
+
+            xhr.onreadystatechange = function () {
+                const states = [
+                    "No iniciada",
+                    "Conexión establecida",
+                    "Recibiendo información",
+                    "Petición completada"
+                ];
+
+                document.getElementById("stateResult").textContent = `Estado: ${states[xhr.readyState] || "Desconocido"}`;
+
+                if (xhr.readyState === XMLHttpRequest.DONE) {
+                    if (xhr.status === 200) {
+                        document.getElementById("contentResult").innerHTML = xhr.responseText;
+                        document.getElementById("statusCodeResult").textContent = `Código: ${xhr.status} - ${xhr.statusText}`;
+                        document.getElementById("headersResult").textContent = xhr.getAllResponseHeaders();
+                    } else {
+                        document.getElementById("contentResult").textContent = "No se pudo cargar el contenido.";
+                        document.getElementById("statusCodeResult").textContent = `Código: ${xhr.status} - ${xhr.statusText}`;
+                        document.getElementById("headersResult").textContent = "Sin cabeceras disponibles.";
+                    }
+                }
+            };
+
+            xhr.open("GET", url, true);
+            xhr.send();
+        }
+
+        // Mostrar la URL actual en el campo al cargar la página
+        window.onload = function () {
+            const currentURL = window.location.href;
+            document.getElementById("urlInput").value = currentURL;
+            document.getElementById("contentButton").disabled = false; // Activar botón por defecto
+        };
+    </script>
+</body>
+</html>
